@@ -116,7 +116,7 @@ async function ensureWorkflow(
           context_window: 128000,
         },
         tools: {
-          enabled_tools: [],
+          enabled_tools: ["request_user_input"],
         },
         approval_mode: "never",
         cwd: CWD,
@@ -198,8 +198,7 @@ async function startBridgeServer(): Promise<void> {
       return;
     }
 
-    const workflowId = workflowIdForSession(sessionId);
-    const handle = client.workflow.getHandle(workflowId);
+    const handle = await ensureWorkflow(client, sessionId, message);
     try {
       const itemsBefore = await queryConversationItems(handle);
       const lastSeq = itemsBefore.length ? itemsBefore[itemsBefore.length - 1].seq : 0;
