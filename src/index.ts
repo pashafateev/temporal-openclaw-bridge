@@ -8,7 +8,6 @@ import {
   Connection,
   ConnectionOptions,
   WorkflowHandle,
-  WorkflowUpdateStage,
 } from "@temporalio/client";
 
 type ConversationItem = {
@@ -138,7 +137,6 @@ async function sendUserInput(
 ): Promise<{ turn_id: string }> {
   const result = await handle.executeUpdate("user_input", {
     args: [{ content: message }],
-    waitForStage: WorkflowUpdateStage.COMPLETED,
   });
   return result as { turn_id: string };
 }
