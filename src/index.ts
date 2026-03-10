@@ -8,7 +8,6 @@ import {
   Connection,
   ConnectionOptions,
   WorkflowHandle,
-  WorkflowUpdateStage,
 } from "@temporalio/client";
 
 type ConversationItem = {
@@ -116,7 +115,7 @@ async function ensureWorkflow(
           context_window: 128000,
         },
         tools: {
-          enabled_tools: [],
+          enabled_tools: ["request_user_input"],
         },
         approval_mode: "never",
         cwd: CWD,
@@ -138,7 +137,6 @@ async function sendUserInput(
 ): Promise<{ turn_id: string }> {
   const result = await handle.executeUpdate("user_input", {
     args: [{ content: message }],
-    waitForStage: WorkflowUpdateStage.COMPLETED,
   });
   return result as { turn_id: string };
 }
@@ -198,8 +196,7 @@ async function startBridgeServer(): Promise<void> {
       return;
     }
 
-    const workflowId = workflowIdForSession(sessionId);
-    const handle = client.workflow.getHandle(workflowId);
+    const handle = await ensureWorkflow(client, sessionId, message);
     try {
       const itemsBefore = await queryConversationItems(handle);
       const lastSeq = itemsBefore.length ? itemsBefore[itemsBefore.length - 1].seq : 0;
